@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from . import models
 from django.contrib.auth.models import User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class ClientSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(many=False)
@@ -42,6 +43,18 @@ class RegistratonSerializer(serializers.ModelSerializer):
 
         return account
     
-class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True)
-    password = serializers.CharField(required=True)
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        user = self.user
+        client = getattr(user, 'client', None)
+
+        data.update({
+            'user_id': user.id,
+            'username': user.username,
+            'phone': client.mobile_no if client else None,
+            'role': client.role if client else None,
+        })
+
+        return data
