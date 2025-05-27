@@ -58,3 +58,12 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         })
 
         return data
+    
+class UserDetailSerializer(serializers.ModelSerializer):
+    mobile_no = serializers.CharField(source='client.mobile_no', read_only=True)
+    role = serializers.CharField(source='client.role', read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'mobile_no', 'role']
+
