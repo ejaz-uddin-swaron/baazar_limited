@@ -86,7 +86,7 @@ def activate(request, uid64, token):
         user.is_active = True
         user.save()
         
-        return redirect('login')
+        return redirect('jwt-login')
     else:
         return redirect('register')
     

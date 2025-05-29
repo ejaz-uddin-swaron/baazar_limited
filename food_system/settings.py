@@ -91,6 +91,10 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'authorization',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://baazar-limited-1.onrender.com',
+]
+
 ROOT_URLCONF = 'food_system.urls'
 
 TEMPLATES = [
