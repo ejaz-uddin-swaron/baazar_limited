@@ -148,8 +148,6 @@ class UserLogoutView(APIView):
         
 
 class GetUserInfoByUsername(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, username):
         try:
