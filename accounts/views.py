@@ -13,24 +13,14 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.authtoken.models import Token
-from supabase import create_client
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
-import environ
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
 from drf_yasg import openapi
-
-env = environ.Env()
-environ.Env.read_env()
-
-SUPABASE_URL = env("SUPABASE_URL")
-SUPABASE_KEY = env("SUPABASE_KEY")
-
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Create your views here.
 
@@ -58,18 +48,6 @@ class UserRegistrationApiView(APIView):
 
             client = getattr(user, 'client', None)
             phone_number = client.mobile_no if client else None
-
-            data = {
-                "id": user.id,
-                "username": user.username,
-                "phone":phone_number,
-                "role":"customer"
-            }
-
-            response = supabase.table("users").insert(data).execute()
-
-            if hasattr(response, 'error') and response.error:
-                return Response({"error": "Failed to save user in Supabase"}, status=400)
 
             return Response({'message': 'Check your email for confirmation'}, status=201)
 

@@ -1,3 +1,1 @@
-# Environment files (keep secrets out of git)
 food_system/.env
-.env

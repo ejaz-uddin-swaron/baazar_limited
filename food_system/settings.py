@@ -14,12 +14,15 @@ from pathlib import Path
 import environ
 import os
 env = environ.Env()
-environ.Env.read_env()
+# Ensure we load the existing .env located in the app folder: food_system/.env
+_ENV_FILE = Path(__file__).resolve().parent / '.env'
+environ.Env.read_env(str(_ENV_FILE))
 from supabase import create_client, Client
 from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -119,10 +122,15 @@ WSGI_APPLICATION = 'food_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Database (Supabase Postgres via pooler)
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("SUPABASE_DB_NAME"),
+        "USER": env("SUPABASE_DB_USER"),
+        "PASSWORD": env("SUPABASE_DB_PASSWORD"),
+        "HOST": env("SUPABASE_DB_HOST"),
+        "PORT": env.int("SUPABASE_DB_PORT"),  # 🔑 force integer
     }
 }
 
@@ -175,9 +183,12 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = env("EMAIL")
 EMAIL_HOST_PASSWORD = env("EMAIL_PASSWORD")
 
-SUPABASE_URL = env("SUPABASE_URL")
-SUPABASE_KEY = env("SUPABASE_KEY")
+SUPABASE_URL = env("SUPABASE_URL", default=None)
+SUPABASE_KEY = env("SUPABASE_KEY", default=None)
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Only create a Supabase client if both URL and KEY are provided
+supabase: Client | None = None
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 FERNET_SECRET_KEY = os.environ.get("FERNET_SECRET_KEY")
