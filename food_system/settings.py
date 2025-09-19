@@ -97,8 +97,8 @@ MIDDLEWARE = [
 
 # CORS/CSRF (configure via env for production)
 # If CORS_ALLOWED_ORIGINS is not set, allow all only in DEBUG
-CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
-CORS_ALLOW_ALL_ORIGINS = True if DEBUG and not CORS_ALLOWED_ORIGINS else False
+CORS_ALLOWED_ORIGINS = ["*"]
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
 
