@@ -32,7 +32,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool("DEBUG", default=False)
+# DEBUG = env.bool("DEBUG", default=False)
+DEBUG = True
 
 # Comma-separated list in env, e.g. "localhost,127.0.0.1,baazar-limited-1.onrender.com"
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
@@ -108,7 +109,7 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 # Comma-separated in env, e.g. "https://baazar-limited-1.onrender.com,https://yourdomain.com"
 CSRF_TRUSTED_ORIGINS = env.list(
     "CSRF_TRUSTED_ORIGINS",
-    default=['https://baazar-limited-1.onrender.com']
+    default=['https://baazar-limited.onrender.com']
 )
 
 # Ensure the Render hostname is trusted for CSRF
