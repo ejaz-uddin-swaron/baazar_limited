@@ -11,6 +11,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
+from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.authtoken.models import Token
 from drf_yasg.utils import swagger_auto_schema
@@ -39,7 +40,9 @@ class UserRegistrationApiView(APIView):
             user = serializer.save()
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            confirm_link = f'https://baazar-limited-1.onrender.com/client/active/{uid}/{token}/'
+            # Build absolute activation URL from current request + named URL, avoids hard-coded domain
+            activation_path = reverse('activate', args=[uid, token])
+            confirm_link = request.build_absolute_uri(activation_path)
             email_subject = 'Confirmation email'
             email_body = render_to_string('confirm_email.html', {'confirm_link':confirm_link})
             email = EmailMultiAlternatives(email_subject, '', to=[user.email])
@@ -63,7 +66,11 @@ def activate(request, uid64, token):
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        return redirect('jwt-login')
+        # Show a friendly success page instead of redirecting to an API endpoint
+        return render(request, 'activation_success.html', {
+            'message': 'Your account has been activated successfully.',
+            'login_url': reverse('jwt-login'),
+        })
     else:
         return render(request, 'activation_failed.html', {'message': 'Activation link is invalid or has expired.'})
     

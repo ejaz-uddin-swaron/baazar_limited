@@ -32,9 +32,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = ["*"]
+# Comma-separated list in env, e.g. "localhost,127.0.0.1,baazar-limited-1.onrender.com"
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 
 # Application definition
 
@@ -78,6 +79,8 @@ SWAGGER_SETTINGS = {
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    # Serve static files efficiently in production
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,7 +89,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS/CSRF (configure via env for production)
+# If CORS_ALLOWED_ORIGINS is not set, allow all only in DEBUG
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
+CORS_ALLOW_ALL_ORIGINS = True if DEBUG and not CORS_ALLOWED_ORIGINS else False
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -94,9 +100,11 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     'authorization',
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://baazar-limited-1.onrender.com',
-]
+# Comma-separated in env, e.g. "https://baazar-limited-1.onrender.com,https://yourdomain.com"
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS",
+    default=['https://baazar-limited-1.onrender.com']
+)
 
 ROOT_URLCONF = 'food_system.urls'
 
@@ -170,6 +178,16 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Where collectstatic will place files (used by WhiteNoise/Render)
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Enable hashed & compressed static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -192,3 +210,8 @@ if SUPABASE_URL and SUPABASE_KEY:
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 FERNET_SECRET_KEY = os.environ.get("FERNET_SECRET_KEY")
+
+# Ensure correct scheme/host behind Render's proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=not DEBUG)
