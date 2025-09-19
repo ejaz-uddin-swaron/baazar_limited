@@ -57,16 +57,15 @@ def activate(request, uid64, token):
     try:
         uid = urlsafe_base64_decode(uid64).decode()
         user = User._default_manager.get(pk=uid)
-    except(User.DoesNotExist):
+    except (User.DoesNotExist, ValueError, TypeError, OverflowError):
         user = None
 
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        
         return redirect('jwt-login')
     else:
-        return redirect('register')
+        return render(request, 'activation_failed.html', {'message': 'Activation link is invalid or has expired.'})
     
 class CustomUserLoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
